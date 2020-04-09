@@ -6,7 +6,8 @@ import random
 import pickle
 import warnings
 import argparse
-
+import time
+start = time.time()
 parser = argparse.ArgumentParser(description='Sort-of-CLEVR dataset generator')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
@@ -270,3 +271,5 @@ filename = os.path.join(dirs,'sort-of-clevr.pickle')
 with  open(filename, 'wb') as f:
     pickle.dump((train_datasets, test_datasets), f)
 print('datasets saved at {}'.format(filename))
+end = time.time()
+print(f"Runtime of Dataset Generator: {end - start} seconds")
