@@ -268,19 +268,23 @@ if args.resume:
         model.load_state_dict(checkpoint)
         print('==> loaded checkpoint {}'.format(filename))
 
-with open(f'./{args.model}_{args.seed}_log.csv', 'w') as log_file:
-    csv_writer = csv.writer(log_file, delimiter=',')
-    csv_writer.writerow(['epoch', 'train_acc_ternary', 'train_acc_rel',
-                     'train_acc_norel', 'train_acc_ternary', 'test_acc_rel', 'test_acc_norel'])
-
-    print(f"Training {args.model} {f'({args.relation_type})' if args.model == 'RN' else ''} model...")
-
-    for epoch in range(1, args.epochs + 1):
-        train_acc_ternary, train_acc_binary, train_acc_unary = train(
-            epoch, ternary_train, rel_train, norel_train)
-        test_acc_ternary, test_acc_binary, test_acc_unary = test(
+for epoch in range(1, args.epochs + 1):
+    test_acc_ternary, test_acc_binary, test_acc_unary = test(
             epoch, ternary_test, rel_test, norel_test)
 
-        csv_writer.writerow([epoch, train_acc_ternary, train_acc_binary,
-                         train_acc_unary, test_acc_ternary, test_acc_binary, test_acc_unary])
-        model.save_model(epoch)
+# with open(f'./{args.model}_{args.seed}_log.csv', 'w') as log_file:
+#     csv_writer = csv.writer(log_file, delimiter=',')
+#     csv_writer.writerow(['epoch', 'train_acc_ternary', 'train_acc_rel',
+#                      'train_acc_norel', 'train_acc_ternary', 'test_acc_rel', 'test_acc_norel'])
+#
+#     print(f"Training {args.model} {f'({args.relation_type})' if args.model == 'RN' else ''} model...")
+#
+#     for epoch in range(1, args.epochs + 1):
+#         train_acc_ternary, train_acc_binary, train_acc_unary = train(
+#             epoch, ternary_train, rel_train, norel_train)
+#         test_acc_ternary, test_acc_binary, test_acc_unary = test(
+#             epoch, ternary_test, rel_test, norel_test)
+#
+#         csv_writer.writerow([epoch, train_acc_ternary, train_acc_binary,
+#                          train_acc_unary, test_acc_ternary, test_acc_binary, test_acc_unary])
+#         model.save_model(epoch)
