@@ -24,7 +24,7 @@ size = 5
 question_size = 18  ## 2 x (6 for one-hot vector of color), 3 for question type, 3 for question subtype
 q_type_idx = 12
 sub_q_type_idx = 15
-"""Answer : [yes, no, rectangle, circle, r, g, b, o, k, y]"""
+"""Answer : [yes, no, rectangle, circle, 1, 2, 3, 4, 5, 6]"""
 
 nb_questions = 10
 dirs = './data'
@@ -88,7 +88,7 @@ def build_dataset():
         subtype = random.randint(0,2)
         question[subtype+sub_q_type_idx] = 1
         norel_questions.append(question)
-        """Answer : [yes, no, rectangle, circle, r, g, b, o, k, y]"""
+        """Answer : [yes, no, rectangle, circle, 1, 2, 3, 4, 5, 6]"""
         if subtype == 0:
             """query shape->rectangle/circle"""
             if objects[color][2] == 'r':
