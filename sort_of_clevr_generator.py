@@ -10,6 +10,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Sort-of-CLEVR dataset generator')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
+parser.add_argument('--t-subtype', type=int, default=-1,
+                    help='Force ternary questions to be of a given type')
 args = parser.parse_args()
 
 random.seed(args.seed)
@@ -162,8 +164,13 @@ def build_dataset():
         color2 = rnd_colors[1]
         question[6 + color2] = 1
 
-        question[q_type_idx+2] = 1
-        subtype = random.randint(0, 2)
+        question[q_type_idx + 2] = 1
+        
+        if args.t_subtype >= 0 and args.t_subtype < 3:
+            subtype = args.t_subtype
+        else:
+            subtype = random.randint(0, 2)
+
         question[subtype+sub_q_type_idx] = 1
         ternary_questions.append(question)
 
@@ -193,9 +200,9 @@ def build_dataset():
 
             answer = between_count + 4
         elif subtype == 1:
-            """is-on-line->yes/no"""
+            """is-on-band->yes/no"""
             
-            grace_threshold = 2.5  # half of the size of objects
+            grace_threshold = 12  # half of the size of objects
             epsilon = 1e-10  
             m = (B[1]-A[1])/((B[0]-A[0]) + epsilon ) # add epsilon to prevent dividing by zero
             c = A[1] - (m*A[0])
