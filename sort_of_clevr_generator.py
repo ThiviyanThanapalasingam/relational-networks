@@ -174,14 +174,15 @@ def build_dataset():
         question[subtype+sub_q_type_idx] = 1
         ternary_questions.append(question)
 
-        # get coordiantes of object from question
+        # get coordinates of object from question
         A = objects[color1][1]
         B = objects[color2][1]
 
         if subtype == 0:
-            """between->1~4"""
+            """between->yes/no"""
 
-            between_count = 0 
+            answer = 1  # default answer is 'no'
+
             # check is any objects lies inside the box
             for other_obj in objects:
                 # skip object A and B
@@ -196,9 +197,9 @@ def build_dataset():
                    (A[0] <= other_objx <= B[0] and B[1] <= other_objy <= A[1]) or \
                    (B[0] <= other_objx <= A[0] and B[1] <= other_objy <= A[1]) or \
                    (B[0] <= other_objx <= A[0] and A[1] <= other_objy <= B[1]):
-                    between_count += 1
+                    answer = 0  # change answer to 'yes'
+                    break
 
-            answer = between_count + 4
         elif subtype == 1:
             """is-on-band->yes/no"""
             
