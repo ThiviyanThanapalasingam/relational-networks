@@ -192,23 +192,24 @@ def build_dataset():
         if subtype == 0:
             """between->yes/no"""
 
-            sampling_bias = 0.35  # increasing will obtain more positive classes
+            sampling_bias = 0.35  # balance answer classes
 
             answer = 1  # default answer is 'no'
 
             if random.random() > sampling_bias:
                 answer = between_check(A, color1, B, color2, objects)
             else:
-                for color2 in rnd_colors[1:]:
-                    B = objects[color2][1]
+                for color in rnd_colors[1:]:
                     if answer == 0:  # stop the check if the answer is already a yes
                         break
+                    color2 = color
+                    B = objects[color2][1]
                     answer = between_check(A, color1, B, color2, objects)
 
         elif subtype == 1:
             """is-on-band->yes/no"""
             
-            grace_threshold = 12  # half of the size of objects
+            grace_threshold = 12
             epsilon = 1e-10  
             m = (B[1]-A[1])/((B[0]-A[0]) + epsilon ) # add epsilon to prevent dividing by zero
             c = A[1] - (m*A[0])
