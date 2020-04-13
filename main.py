@@ -129,8 +129,8 @@ def train(epoch, ternary, rel, norel):
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
                   'Ternary accuracy: {:.0f}% | Relations accuracy: {:.0f}% | Non-relations accuracy: {:.0f}%'.format(
                    epoch,
-                   batch_idx * bs * 2,
-                   len(rel[0]) * 2,
+                   batch_idx * bs * 3,
+                   len(rel[0]) * 3,
                    100. * batch_idx * bs / len(rel[0]),
                    accuracy_ternary,
                    accuracy_rel,
