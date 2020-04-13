@@ -268,12 +268,14 @@ if args.resume:
         model.load_state_dict(checkpoint)
         print('==> loaded checkpoint {}'.format(filename))
 
-with open(f'./{args.model}_{args.seed}_log.csv', 'w') as log_file:
+model_name = f"{args.model}{f'({args.relation_type})' if args.model == 'RN' else ''}"
+
+with open(f'./{model_name}_seed{args.seed}_accuracy.csv', 'w') as log_file:
     csv_writer = csv.writer(log_file, delimiter=',')
     csv_writer.writerow(['epoch', 'train_acc_ternary', 'train_acc_rel',
                      'train_acc_norel', 'train_acc_ternary', 'test_acc_rel', 'test_acc_norel'])
 
-    print(f"Training {args.model} {f'({args.relation_type})' if args.model == 'RN' else ''} model...")
+    print(f"Training {model_name} model...")
 
     for epoch in range(1, args.epochs + 1):
         train_acc_ternary, train_acc_binary, train_acc_unary = train(
