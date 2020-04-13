@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import StepLR
 
 
 class ConvInputModel(nn.Module):
@@ -125,6 +126,7 @@ class RN(BasicModel):
         self.fcout = FCOutputModel()
         
         self.optimizer = optim.Adam(self.parameters(), lr=args.lr)
+        self.scheduler = StepLR(self.optimizer, step_size=args.lrd_step_size, gamma=args.lrd_gamma, last_epoch=-1)
 
 
     def forward(self, img, qst):
@@ -219,6 +221,7 @@ class CNN_MLP(BasicModel):
         self.fcout = FCOutputModel()
 
         self.optimizer = optim.Adam(self.parameters(), lr=args.lr)
+        self.scheduler = StepLR(self.optimizer, step_size=args.lrd_step_size, gamma=args.lrd_gamma, last_epoch=-1)
         #print([ a for a in self.parameters() ] )
   
     def forward(self, img, qst):

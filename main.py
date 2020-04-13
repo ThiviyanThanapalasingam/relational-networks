@@ -28,6 +28,10 @@ parser.add_argument('--epochs', type=int, default=20, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
                     help='learning rate (default: 0.0001)')
+parser.add_argument('--lrd-gamma', type=float, default=1.0, metavar='N',
+                    help='gamma value for step-wise learning rate decay (default: 0.1)')
+parser.add_argument('--lrd-step-size', type=int, default=10, metavar='N',
+                    help='step size for step-wise learning rate decay (default: 10)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
@@ -109,6 +113,8 @@ def train(epoch, ternary, rel, norel):
     l_binary = []
     l_unary = []
 
+    print('Epoch:', epoch, 'LR:', model.scheduler.get_lr())
+
     for batch_idx in range(len(rel[0]) // bs):
         tensor_data(ternary, batch_idx)
         accuracy_ternary, loss_ternary = model.train_(input_img, input_qst, label)
@@ -124,6 +130,8 @@ def train(epoch, ternary, rel, norel):
         accuracy_norel, loss_unary = model.train_(input_img, input_qst, label)
         acc_norels.append(accuracy_norel.item())
         l_unary.append(loss_unary.item())
+
+        model.scheduler.step()
 
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
