@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import StepLR
 
 
 class ConvInputModel(nn.Module):
@@ -125,6 +126,7 @@ class RN(BasicModel):
         self.fcout = FCOutputModel()
         
         self.optimizer = optim.Adam(self.parameters(), lr=args.lr)
+        self.scheduler = StepLR(self.optimizer, step_size=args.lrd_step_size, gamma=args.lrd_gamma, last_epoch=-1)
 
 
     def forward(self, img, qst):
@@ -184,7 +186,7 @@ class RN(BasicModel):
             x_full = torch.cat([x_i,x_j],3) # (64x25x25x2*26+18)
         
             # reshape for passing through network
-            x_ = x_full.view(mb * (d * d) * (d * d), 70)  # (64*25*25x2*26*18) = (40.000, 70)
+            x_ = x_full.view(mb * (d * d) * (d * d), 70)  # (64*25*25x2*26+18) = (40.000, 70)
             
         x_ = self.g_fc1(x_)
         x_ = F.relu(x_)
@@ -219,6 +221,7 @@ class CNN_MLP(BasicModel):
         self.fcout = FCOutputModel()
 
         self.optimizer = optim.Adam(self.parameters(), lr=args.lr)
+        self.scheduler = StepLR(self.optimizer, step_size=args.lrd_step_size, gamma=args.lrd_gamma, last_epoch=-1)
         #print([ a for a in self.parameters() ] )
   
     def forward(self, img, qst):

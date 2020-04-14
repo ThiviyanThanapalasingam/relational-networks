@@ -28,6 +28,10 @@ parser.add_argument('--epochs', type=int, default=20, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
                     help='learning rate (default: 0.0001)')
+parser.add_argument('--lrd-gamma', type=float, default=1.0, metavar='N',
+                    help='gamma value for step-wise learning rate decay (default: 0.1)')
+parser.add_argument('--lrd-step-size', type=int, default=10, metavar='N',
+                    help='step size for step-wise learning rate decay (default: 10)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
@@ -109,6 +113,8 @@ def train(epoch, ternary, rel, norel):
     l_binary = []
     l_unary = []
 
+    print('Epoch:', epoch, 'LR:', model.scheduler.get_lr())
+
     for batch_idx in range(len(rel[0]) // bs):
         tensor_data(ternary, batch_idx)
         accuracy_ternary, loss_ternary = model.train_(input_img, input_qst, label)
@@ -129,13 +135,15 @@ def train(epoch, ternary, rel, norel):
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
                   'Ternary accuracy: {:.0f}% | Relations accuracy: {:.0f}% | Non-relations accuracy: {:.0f}%'.format(
                    epoch,
-                   batch_idx * bs * 2,
-                   len(rel[0]) * 2,
+                   batch_idx * bs * 3,
+                   len(rel[0]) * 3,
                    100. * batch_idx * bs / len(rel[0]),
                    accuracy_ternary,
                    accuracy_rel,
                    accuracy_norel))
-        
+
+    model.scheduler.step()
+
     avg_acc_ternary = sum(acc_ternary) / len(acc_ternary)
     avg_acc_binary = sum(acc_rels) / len(acc_rels)
     avg_acc_unary = sum(acc_norels) / len(acc_norels)
@@ -268,12 +276,14 @@ if args.resume:
         model.load_state_dict(checkpoint)
         print('==> loaded checkpoint {}'.format(filename))
 
-with open(f'./{args.model}_{args.seed}_log.csv', 'w') as log_file:
+model_name = f"{args.model}{f'({args.relation_type})' if args.model == 'RN' else ''}"
+
+with open(f'./{model_name}_seed{args.seed}_accuracy.csv', 'w') as log_file:
     csv_writer = csv.writer(log_file, delimiter=',')
     csv_writer.writerow(['epoch', 'train_acc_ternary', 'train_acc_rel',
                      'train_acc_norel', 'train_acc_ternary', 'test_acc_rel', 'test_acc_norel'])
 
-    print(f"Training {args.model} {f'({args.relation_type})' if args.model == 'RN' else ''} model...")
+    print(f"Training {model_name} model...")
 
     for epoch in range(1, args.epochs + 1):
         train_acc_ternary, train_acc_binary, train_acc_unary = train(
