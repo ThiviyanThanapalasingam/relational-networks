@@ -131,8 +131,6 @@ def train(epoch, ternary, rel, norel):
         acc_norels.append(accuracy_norel.item())
         l_unary.append(loss_unary.item())
 
-        model.scheduler.step()
-
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
                   'Ternary accuracy: {:.0f}% | Relations accuracy: {:.0f}% | Non-relations accuracy: {:.0f}%'.format(
@@ -143,7 +141,9 @@ def train(epoch, ternary, rel, norel):
                    accuracy_ternary,
                    accuracy_rel,
                    accuracy_norel))
-        
+
+    model.scheduler.step()
+
     avg_acc_ternary = sum(acc_ternary) / len(acc_ternary)
     avg_acc_binary = sum(acc_rels) / len(acc_rels)
     avg_acc_unary = sum(acc_norels) / len(acc_norels)
