@@ -24,7 +24,7 @@ size = 5
 question_size = 18  ## 2 x (6 for one-hot vector of color), 3 for question type, 3 for question subtype
 q_type_idx = 12
 sub_q_type_idx = 15
-"""Answer : [yes, no, rectangle, circle, r, g, b, o, k, y]"""
+"""Answer : [yes, no, rectangle, circle, 1, 2, 3, 4, 5, 6]"""
 
 nb_questions = 10
 dirs = './data'
@@ -56,6 +56,25 @@ def center_generate(objects):
             return center
 
 
+def between_check(A_pos, A_col, B_pos, B_col, all_objects):
+    """ Check is if any objects lie between A and B """
+    answer = 1
+    for other_obj in all_objects:
+        # skip object A and B
+        if (other_obj[0] == A_col) or (other_obj[0] == B_col):
+            continue
+
+        # Get x and y coordinate of third object
+        other_objx = other_obj[1][0]
+        other_objy = other_obj[1][1]
+
+        if (A_pos[0] <= other_objx <= B_pos[0] and A_pos[1] <= other_objy <= B_pos[1]) or \
+           (A_pos[0] <= other_objx <= B_pos[0] and B_pos[1] <= other_objy <= A_pos[1]) or \
+           (B_pos[0] <= other_objx <= A_pos[0] and B_pos[1] <= other_objy <= A_pos[1]) or \
+           (B_pos[0] <= other_objx <= A_pos[0] and A_pos[1] <= other_objy <= B_pos[1]):
+            answer = 0  # change answer to 'yes'
+            break
+    return answer
 
 def build_dataset():
     objects = []
@@ -88,7 +107,7 @@ def build_dataset():
         subtype = random.randint(0,2)
         question[subtype+sub_q_type_idx] = 1
         norel_questions.append(question)
-        """Answer : [yes, no, rectangle, circle, r, g, b, o, k, y]"""
+        """Answer : [yes, no, rectangle, circle, 1, 2, 3, 4, 5, 6]"""
         if subtype == 0:
             """query shape->rectangle/circle"""
             if objects[color][2] == 'r':
@@ -155,54 +174,42 @@ def build_dataset():
 
     """Ternary Relational questions"""
     for _ in range(nb_questions):
-        question = np.zeros((question_size))
-        rnd_colors = np.random.permutation(np.arange(5))
+        rnd_colors = np.random.permutation(np.arange(6))
         # 1st object
         color1 = rnd_colors[0]
-        question[color1] = 1
         # 2nd object
         color2 = rnd_colors[1]
-        question[6 + color2] = 1
-
-        question[q_type_idx + 2] = 1
         
         if args.t_subtype >= 0 and args.t_subtype < 3:
             subtype = args.t_subtype
         else:
             subtype = random.randint(0, 2)
 
-        question[subtype+sub_q_type_idx] = 1
-        ternary_questions.append(question)
-
-        # get coordiantes of object from question
+        # get coordinates of object from question
         A = objects[color1][1]
         B = objects[color2][1]
 
         if subtype == 0:
-            """between->1~4"""
+            """between->yes/no"""
 
-            between_count = 0 
-            # check is any objects lies inside the box
-            for other_obj in objects:
-                # skip object A and B
-                if (other_obj[0] == color1) or (other_obj[0] == color2):
-                    continue
+            sampling_bias = 0.35  # balance answer classes
 
-                # Get x and y coordinate of third object
-                other_objx = other_obj[1][0]
-                other_objy = other_obj[1][1]
+            answer = 1  # default answer is 'no'
 
-                if (A[0] <= other_objx <= B[0] and A[1] <= other_objy <= B[1]) or \
-                   (A[0] <= other_objx <= B[0] and B[1] <= other_objy <= A[1]) or \
-                   (B[0] <= other_objx <= A[0] and B[1] <= other_objy <= A[1]) or \
-                   (B[0] <= other_objx <= A[0] and A[1] <= other_objy <= B[1]):
-                    between_count += 1
+            if random.random() > sampling_bias:
+                answer = between_check(A, color1, B, color2, objects)
+            else:
+                for color in rnd_colors[1:]:
+                    if answer == 0:  # stop the check if the answer is already a yes
+                        break
+                    color2 = color
+                    B = objects[color2][1]
+                    answer = between_check(A, color1, B, color2, objects)
 
-            answer = between_count + 4
         elif subtype == 1:
             """is-on-band->yes/no"""
             
-            grace_threshold = 12  # half of the size of objects
+            grace_threshold = 12
             epsilon = 1e-10  
             m = (B[1]-A[1])/((B[0]-A[0]) + epsilon ) # add epsilon to prevent dividing by zero
             c = A[1] - (m*A[0])
@@ -251,6 +258,13 @@ def build_dataset():
             warnings.filterwarnings("default")
             answer = obtuse_count + 4
 
+        # generate question embedding
+        question = np.zeros((question_size))
+        question[color1] = 1
+        question[6 + color2] = 1
+        question[q_type_idx + 2] = 1
+        question[subtype + sub_q_type_idx] = 1
+        ternary_questions.append(question)
         ternary_answers.append(answer)
 
     ternary_relations = (ternary_questions, ternary_answers)
