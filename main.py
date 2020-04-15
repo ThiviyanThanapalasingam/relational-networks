@@ -121,15 +121,13 @@ def train(epoch, ternary, rel, norel):
         acc_ternary.append(accuracy_ternary.item())
         l_ternary.append(loss_ternary.item())
 
-        tensor_data(rel, batch_idx)
-        accuracy_rel, loss_binary = model.train_(input_img, input_qst, label)
-        acc_rels.append(accuracy_rel.item())
-        l_binary.append(loss_binary.item())
+        accuracy_rel, loss_binary = 0, 0
+        acc_rels.append(accuracy_rel)
+        l_binary.append(loss_binary)
 
-        tensor_data(norel, batch_idx)
-        accuracy_norel, loss_unary = model.train_(input_img, input_qst, label)
-        acc_norels.append(accuracy_norel.item())
-        l_unary.append(loss_unary.item())
+        accuracy_norel, loss_unary = 0, 0
+        acc_norels.append(accuracy_norel)
+        l_unary.append(loss_unary)
 
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)] '
