@@ -29,7 +29,7 @@ parser.add_argument('--epochs', type=int, default=20, metavar='N',
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
                     help='learning rate (default: 0.0001)')
 parser.add_argument('--lrd-gamma', type=float, default=1.0, metavar='N',
-                    help='gamma value for step-wise learning rate decay (default: 0.1)')
+                    help='gamma value for step-wise learning rate decay (default: 1.0)')
 parser.add_argument('--lrd-step-size', type=int, default=10, metavar='N',
                     help='step size for step-wise learning rate decay (default: 10)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
